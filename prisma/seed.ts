@@ -16,8 +16,12 @@ async function main() {
   console.log("Membuat User Admin & Kader...");
   await prisma.user.createMany({
     data: [
-      { name: 'Super Admin', email: 'admin@siposma.com', password: 'hashedpassword', role: 'ADMIN' },
-      { name: 'Kader Posyandu', email: 'kader@siposma.com', password: 'hashedpassword', role: 'KADER' }
+      { name: 'Super Admin (Budi)', email: 'admin', password: 'admin123', role: 'ADMIN' },
+      { name: 'Administrator Posyandu (Siti)', email: 'adminpos', password: 'adminpos123', role: 'ADMIN' },
+      { name: 'Kader Posyandu (Ibu Tini)', email: 'kader', password: 'kader123', role: 'KADER' },
+      { name: 'Bidan Desa (Ibu Ratna)', email: 'bidan', password: 'bidan123', role: 'BIDAN' },
+      { name: 'Kepala Desa (Bapak Joko)', email: 'kades', password: 'kades123', role: 'KADES' },
+      { name: 'Orang Tua Balita (Bapak Anton)', email: 'ortu', password: 'ortu123', role: 'ORTU' }
     ]
   });
 
