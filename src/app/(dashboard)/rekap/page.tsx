@@ -5,7 +5,7 @@ import Header from "@/components/layout/Header";
 export default function RekapPage() {
   return (
     <>
-      <Header title="Laporan & Rekapitulasi" context="Generate laporan otomatis" />
+      <Header title="Rekapitulasi & Pelaporan" context="Generate laporan otomatis" />
       <section className="view-section active">
         <div className="step-banner" style={{ borderLeftColor: 'var(--step6)' }}>
           <div className="step-banner-icon" style={{ background: 'var(--step6)' }}><i className="fas fa-file-invoice"></i></div>

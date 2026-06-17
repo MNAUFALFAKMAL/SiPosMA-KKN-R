@@ -9,6 +9,26 @@ import * as XLSX from "xlsx";
 export default function ExportPage() {
   const [loading, setLoading] = useState(false);
 
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') => {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i> <span>${message}</span>`;
+    
+    container.appendChild(toast);
+    
+    toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(60px)';
+      setTimeout(() => {
+        toast.remove();
+      }, 400);
+    }, 3000);
+  };
+
   const fetchData = async () => {
     const res = await fetch('/api/pemeriksaan');
     return await res.json();
@@ -41,8 +61,9 @@ export default function ExportPage() {
       });
 
       doc.save("Laporan_Posyandu.pdf");
+      showToast("Laporan PDF berhasil diunduh!", "success");
     } catch (e) {
-      alert("Gagal export PDF");
+      showToast("Gagal mengekspor data ke PDF", "error");
     } finally {
       setLoading(false);
     }
@@ -65,8 +86,9 @@ export default function ExportPage() {
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Data_Pemeriksaan");
       XLSX.writeFile(workbook, "Laporan_Posyandu.xlsx");
+      showToast("Laporan Excel berhasil diunduh!", "success");
     } catch (e) {
-      alert("Gagal export Excel");
+      showToast("Gagal mengekspor data ke Excel", "error");
     } finally {
       setLoading(false);
     }
@@ -74,7 +96,7 @@ export default function ExportPage() {
 
   return (
     <>
-      <Header title="Pelaporan & Export Data" context="Unduh laporan dalam format PDF & Excel" />
+      <Header title="Pelaporan & Ekspor" context="Unduh laporan dalam format PDF & Excel" />
       <section className="view-section active">
         <div className="card-container">
           <h3><i className="fas fa-file-export"></i> Pusat Unduhan Laporan</h3>

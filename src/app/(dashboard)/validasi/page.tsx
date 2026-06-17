@@ -8,6 +8,7 @@ export default function ValidasiPage() {
   const [loading, setLoading] = useState(false);
   const [masalahList, setMasalahList] = useState<any[]>([]);
   const [summary, setSummary] = useState({ total: 0, valid: 0, bermasalah: 0 });
+  const [selectedMasalah, setSelectedMasalah] = useState<any | null>(null);
 
   const fetchPemeriksaan = async () => {
     try {
@@ -149,11 +150,13 @@ export default function ValidasiPage() {
                 <tbody>
                   {masalahList.map((m, idx) => (
                     <tr key={idx}>
-                      <td>{m.nama}</td>
-                      <td><span className={`badge ${m.kategori === 'Balita' ? 'badge-primary' : m.kategori === 'Ibu Hamil' ? 'badge-warning' : 'badge-secondary'}`}>{m.kategori}</span></td>
-                      <td style={{ color: 'var(--danger)', fontWeight: 500 }}>{m.masalah}</td>
-                      <td>{m.rekomendasi}</td>
-                      <td><button className="btn btn-sm btn-primary">Tinjau</button></td>
+                      <td data-label="Nama">{m.nama}</td>
+                      <td data-label="Kategori"><span className={`badge ${m.kategori === 'Balita' ? 'badge-primary' : m.kategori === 'Ibu Hamil' ? 'badge-warning' : 'badge-secondary'}`}>{m.kategori}</span></td>
+                      <td data-label="Masalah" style={{ color: 'var(--danger)', fontWeight: 500 }}>{m.masalah}</td>
+                      <td data-label="Rekomendasi">{m.rekomendasi}</td>
+                      <td data-label="Aksi">
+                        <button className="btn btn-sm btn-primary" onClick={() => setSelectedMasalah(m)}>Tinjau</button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -161,6 +164,52 @@ export default function ValidasiPage() {
             </div>
           )}
         </div>
+
+        {selectedMasalah && (
+          <div className="modal-overlay show" onClick={() => setSelectedMasalah(null)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Detail Temuan Validasi</h3>
+                <button className="modal-close" onClick={() => setSelectedMasalah(null)}>
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                  <div className="search-avatar" style={{ background: 'linear-gradient(135deg, var(--danger), var(--warning-dark))', color: 'white', width: '44px', height: '44px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
+                    <i className={selectedMasalah.kategori === 'Balita' ? 'fas fa-child' : selectedMasalah.kategori === 'Ibu Hamil' ? 'fas fa-female' : 'fas fa-blind'}></i>
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0 }}>{selectedMasalah.nama}</h4>
+                    <span className="badge badge-primary" style={{ marginTop: '4px', display: 'inline-block' }}>{selectedMasalah.kategori}</span>
+                  </div>
+                </div>
+
+                <div className="validasi-rule err" style={{ background: 'rgba(192, 57, 43, 0.05)', display: 'flex', gap: '12px', padding: '12px', borderRadius: '8px', borderLeft: '3.5px solid var(--danger)' }}>
+                  <div className="rule-icon" style={{ color: 'var(--danger)' }}><i className="fas fa-exclamation-triangle"></i></div>
+                  <div className="rule-text">
+                    <div className="rule-title" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Masalah Terdeteksi</div>
+                    <div className="rule-desc" style={{ color: 'var(--danger)', fontSize: '0.9rem', fontWeight: 600, marginTop: '2px' }}>{selectedMasalah.masalah}</div>
+                  </div>
+                </div>
+
+                <div className="validasi-rule ok" style={{ background: 'rgba(0, 168, 120, 0.05)', display: 'flex', gap: '12px', padding: '12px', borderRadius: '8px', borderLeft: '3.5px solid var(--success)' }}>
+                  <div className="rule-icon" style={{ color: 'var(--success)' }}><i className="fas fa-lightbulb"></i></div>
+                  <div className="rule-text">
+                    <div className="rule-title" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Rekomendasi Tindakan</div>
+                    <div className="rule-desc" style={{ color: 'var(--success)', fontSize: '0.9rem', marginTop: '2px' }}>{selectedMasalah.rekomendasi}</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
+                  <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setSelectedMasalah(null)}>
+                    Selesai &amp; Mengerti
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </>
   );

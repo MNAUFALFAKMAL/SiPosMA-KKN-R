@@ -8,6 +8,8 @@ export default function PelayananPage() {
   const [selectedSasaran, setSelectedSasaran] = useState<any>(null);
   const [searchText, setSearchText] = useState("");
   
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  
   const [formData, setFormData] = useState({
     sasaranId: "",
     tanggal: new Date().toISOString().split('T')[0],
@@ -41,20 +43,11 @@ export default function PelayananPage() {
     fetchSasaran();
   }, []);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setSearchText(val);
-
-    const matchId = val.match(/\[ID:(.+)\]/);
-    if (matchId && matchId[1]) {
-      const sasaranId = matchId[1];
-      const sasaran = sasaranList.find(s => s.id === sasaranId);
-      setSelectedSasaran(sasaran || null);
-      setFormData(prev => ({ ...prev, sasaranId }));
-    } else {
-      setSelectedSasaran(null);
-      setFormData(prev => ({ ...prev, sasaranId: "" }));
-    }
+  const handleSelectSasaran = (s: any) => {
+    setSelectedSasaran(s);
+    setSearchText(s.nama);
+    setFormData(prev => ({ ...prev, sasaranId: s.id }));
+    setShowSuggestions(false);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -114,22 +107,71 @@ export default function PelayananPage() {
           
           <form onSubmit={handleSubmit}>
             <div className="form-grid" style={{ marginBottom: '18px' }}>
-              <div className="form-group">
+              <div className="form-group" style={{ position: 'relative' }}>
                 <label>Pilih Sasaran (Cari Nama / NIK) <span className="req">*</span></label>
                 <input 
                   type="text" 
                   id="pel-sasaran" 
-                  list="sasaran-list"
-                  placeholder="Ketik untuk mencari..." 
+                  placeholder="Ketik nama atau NIK untuk mencari..." 
                   value={searchText}
-                  onChange={handleSearchChange}
+                  onChange={(e) => {
+                    setSearchText(e.target.value);
+                    setShowSuggestions(true);
+                    if (e.target.value === "") {
+                      setSelectedSasaran(null);
+                      setFormData(prev => ({ ...prev, sasaranId: "" }));
+                    }
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
                   required 
+                  autoComplete="off"
                 />
-                <datalist id="sasaran-list">
-                  {sasaranList.map(s => (
-                    <option key={s.id} value={`${s.nama} (${s.kategori}) - ${s.nik || s.tglLahir.split('T')[0]} [ID:${s.id}]`} />
-                  ))}
-                </datalist>
+                {showSuggestions && searchText && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    backgroundColor: 'white',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-sm)',
+                    boxShadow: '0 8px 20px rgba(91, 79, 207, 0.1)',
+                    zIndex: 100,
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    marginTop: '4px'
+                  }}>
+                    {(() => {
+                      const suggestions = sasaranList.filter(s => 
+                        s.nama.toLowerCase().includes(searchText.toLowerCase()) || 
+                        (s.nik && s.nik.includes(searchText))
+                      );
+                      if (suggestions.length === 0) {
+                        return <div style={{ padding: '10px 14px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Tidak ditemukan hasil</div>;
+                      }
+                      return suggestions.map(s => (
+                        <div 
+                          key={s.id} 
+                          onClick={() => handleSelectSasaran(s)}
+                          style={{
+                            padding: '10px 14px',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid rgba(0,0,0,0.05)',
+                            fontSize: '0.85rem',
+                            display: 'block',
+                            textAlign: 'left'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(91,79,207,0.08)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <strong>{s.nama}</strong> <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({s.kategori === 'balita' ? 'Balita' : s.kategori === 'ibu_hamil' ? 'Ibu Hamil' : 'Lansia'})</span>
+                          <br/>
+                          <small style={{ color: 'var(--text-muted)' }}>NIK: {s.nik || '-'} | Lahir: {s.tglLahir.split('T')[0]}</small>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                )}
               </div>
               <div className="form-group">
                 <label>Tanggal Pemeriksaan <span className="req">*</span></label>

@@ -57,3 +57,60 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const data = await request.json();
+    const { id, ...updateData } = data;
+    
+    let tglLahir = undefined;
+    if (updateData.tglLahir) {
+      tglLahir = new Date(updateData.tglLahir);
+    }
+    let hpht = null;
+    if (updateData.hpht) {
+      hpht = new Date(updateData.hpht);
+    }
+    let usiaHamil = null;
+    if (updateData.usiaHamil) {
+      usiaHamil = parseInt(updateData.usiaHamil, 10);
+    }
+
+    const updatedSasaran = await prisma.sasaran.update({
+      where: { id },
+      data: {
+        kategori: updateData.kategori,
+        nama: updateData.nama,
+        nik: updateData.nik || null,
+        tglLahir: tglLahir,
+        jk: updateData.jk || null,
+        namaIbu: updateData.namaIbu || null,
+        hp: updateData.hp || null,
+        alamat: updateData.alamat || null,
+        catatan: updateData.catatan || null,
+        usiaHamil: usiaHamil,
+        hpht: hpht,
+      }
+    });
+
+    return NextResponse.json(updatedSasaran);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) {
+      return NextResponse.json({ error: "Missing id parameter" }, { status: 400 });
+    }
+    await prisma.sasaran.delete({
+      where: { id }
+    });
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

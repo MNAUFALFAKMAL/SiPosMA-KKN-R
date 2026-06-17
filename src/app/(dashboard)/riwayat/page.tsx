@@ -76,13 +76,13 @@ export default function RiwayatPage() {
                     <tbody>
                       {pemeriksaanList.map(p => (
                         <tr key={p.id}>
-                          <td>{new Date(p.tanggal).toLocaleDateString('id-ID')}</td>
-                          <td>{p.sasaran?.nama}</td>
-                          <td>{p.sasaran?.kategori}</td>
-                          <td>{p.bb || p.bbLansia || p.bbBumil || '-'} Kg</td>
-                          <td>{p.tb || p.lilaBumil || '-'}</td>
-                          <td>{p.statusGizi || '-'}</td>
-                          <td>{p.catatan || '-'}</td>
+                          <td data-label="Tanggal">{new Date(p.tanggal).toLocaleDateString('id-ID')}</td>
+                          <td data-label="Nama Sasaran">{p.sasaran?.nama}</td>
+                          <td data-label="Kategori">{p.sasaran?.kategori}</td>
+                          <td data-label="BB">{p.bb || p.bbLansia || p.bbBumil || '-'} Kg</td>
+                          <td data-label="TB / LILA">{p.tb || p.lilaBumil || '-'}</td>
+                          <td data-label="Status Gizi">{p.statusGizi || '-'}</td>
+                          <td data-label="Catatan">{p.catatan || '-'}</td>
                         </tr>
                       ))}
                     </tbody>

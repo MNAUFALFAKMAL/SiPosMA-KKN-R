@@ -1,5 +1,18 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+body:has(.landing-page) {
+  display: block !important;
+  overflow: auto !important;
+}
+
+body:has(.landing-page)::before {
+  display: none !important;
+}
+
 .landing-page {
+  width: 100%;
+  min-height: 100vh;
+  display: block;
 
 .light {
   --mainColor: #0073e6;

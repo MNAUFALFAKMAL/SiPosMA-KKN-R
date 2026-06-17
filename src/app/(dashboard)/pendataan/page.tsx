@@ -7,6 +7,29 @@ export default function PendataanPage() {
   const [activeTab, setActiveTab] = useState("daftar");
   const [sasaranList, setSasaranList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') => {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i> <span>${message}</span>`;
+    
+    container.appendChild(toast);
+    
+    toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(60px)';
+      setTimeout(() => {
+        toast.remove();
+      }, 400);
+    }, 3000);
+  };
 
   const [formData, setFormData] = useState({
     kategori: "balita",
@@ -50,25 +73,101 @@ export default function PendataanPage() {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleEdit = (s: any) => {
+    setEditingId(s.id);
+    setFormData({
+      kategori: s.kategori,
+      nama: s.nama,
+      nik: s.nik || "",
+      tglLahir: s.tglLahir ? s.tglLahir.split('T')[0] : "",
+      jk: s.jk || "L",
+      namaAyah: s.namaAyah || "",
+      namaIbu: s.namaIbu || "",
+      hp: s.hp || "",
+      alamat: s.alamat || "",
+      usiaHamil: s.usiaHamil ? String(s.usiaHamil) : "",
+      hpht: s.hpht ? s.hpht.split('T')[0] : "",
+      catatan: s.catatan || ""
+    });
+    setActiveTab("tambah");
+  };
+
+
+
+  const confirmDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/sasaran?id=${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        showToast("Data sasaran berhasil dihapus!", "success");
+        setDeleteTarget(null);
+        fetchSasaran();
+      } else {
+        showToast("Gagal menghapus data.", "error");
+      }
+    } catch (e) {
+      showToast("Terjadi kesalahan sistem.", "error");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/sasaran', {
-        method: 'POST',
+      const url = '/api/sasaran';
+      const method = editingId ? 'PUT' : 'POST';
+      const body = editingId ? { id: editingId, ...formData } : formData;
+
+      const res = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(body)
       });
+      
       if (res.ok) {
-        alert("Data berhasil disimpan!");
-        setFormData({ ...formData, nama: "", nik: "", tglLahir: "", catatan: "" });
+        showToast(editingId ? "Data berhasil diperbarui!" : "Data berhasil disimpan!", "success");
+        setFormData({
+          kategori: "balita",
+          nama: "",
+          nik: "",
+          tglLahir: "",
+          jk: "L",
+          namaAyah: "",
+          namaIbu: "",
+          hp: "",
+          alamat: "",
+          usiaHamil: "",
+          hpht: "",
+          catatan: ""
+        });
+        setEditingId(null);
         setActiveTab("daftar");
         fetchSasaran();
       } else {
-        alert("Gagal menyimpan data.");
+        showToast("Gagal menyimpan data.", "error");
       }
     } catch (error) {
-      alert("Terjadi kesalahan.");
+      showToast("Terjadi kesalahan.", "error");
     }
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setFormData({
+      kategori: "balita",
+      nama: "",
+      nik: "",
+      tglLahir: "",
+      jk: "L",
+      namaAyah: "",
+      namaIbu: "",
+      hp: "",
+      alamat: "",
+      usiaHamil: "",
+      hpht: "",
+      catatan: ""
+    });
+    setActiveTab("daftar");
   };
 
   const calculateAgeStr = (dateStr: string) => {
@@ -99,7 +198,7 @@ export default function PendataanPage() {
             <i className="fas fa-list"></i> Daftar Sasaran
           </button>
           <button className={`tab-btn ${activeTab === 'tambah' ? 'active' : ''}`} onClick={() => setActiveTab('tambah')}>
-            <i className="fas fa-plus-circle"></i> Registrasi Baru
+            <i className="fas fa-plus-circle"></i> {editingId ? "Edit Sasaran" : "Registrasi Baru"}
           </button>
         </div>
 
@@ -111,7 +210,12 @@ export default function PendataanPage() {
                 <div className="search-bar">
                   <div className="search-input-wrapper">
                     <i className="fas fa-search"></i>
-                    <input type="text" placeholder="Cari nama / NIK..." />
+                    <input 
+                      type="text" 
+                      placeholder="Cari nama / NIK..." 
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                   </div>
                 </div>
               </div>
@@ -128,21 +232,47 @@ export default function PendataanPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sasaranList.length === 0 && !loading && (
-                      <tr><td colSpan={6} style={{textAlign: 'center'}}>Belum ada data sasaran.</td></tr>
-                    )}
-                    {sasaranList.map(s => (
-                      <tr key={s.id}>
-                        <td>{s.nama}<br/><small>{s.nik}</small></td>
-                        <td>{s.kategori === 'balita' ? 'Balita' : s.kategori === 'ibu_hamil' ? 'Ibu Hamil' : 'Lansia'}</td>
-                        <td>{calculateAgeStr(s.tglLahir)}</td>
-                        <td>{s.namaIbu || '-'}</td>
-                        <td>{s.alamat || '-'}</td>
-                        <td>
-                           <button className="btn btn-sm btn-secondary"><i className="fas fa-edit"></i></button>
-                        </td>
-                      </tr>
-                    ))}
+                    {(() => {
+                      const filtered = sasaranList.filter(s => 
+                        s.nama.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                        (s.nik && s.nik.includes(searchTerm))
+                      );
+                      if (filtered.length === 0 && !loading) {
+                        return <tr><td colSpan={6} style={{textAlign: 'center'}}>Tidak menemukan data sasaran.</td></tr>;
+                      }
+                      return filtered.map(s => (
+                        <tr key={s.id}>
+                          <td data-label="Nama">
+                            <div style={{ textAlign: 'left' }} className="mobile-text-right">
+                              <strong>{s.nama}</strong><br/>
+                              <small style={{ color: 'var(--text-muted)' }}>{s.nik || '-'}</small>
+                            </div>
+                          </td>
+                          <td data-label="Kategori">
+                            <span>{s.kategori === 'balita' ? 'Balita' : s.kategori === 'ibu_hamil' ? 'Ibu Hamil' : 'Lansia'}</span>
+                          </td>
+                          <td data-label="Usia">
+                            <span>{calculateAgeStr(s.tglLahir)}</span>
+                          </td>
+                          <td data-label="Ibu/Wali">
+                            <span>{s.namaIbu || '-'}</span>
+                          </td>
+                          <td data-label="Alamat">
+                            <span>{s.alamat || '-'}</span>
+                          </td>
+                          <td data-label="Aksi">
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button className="btn btn-sm btn-secondary" onClick={() => handleEdit(s)} title="Edit">
+                                <i className="fas fa-edit"></i>
+                              </button>
+                              <button className="btn btn-sm btn-danger" onClick={() => setDeleteTarget(s)} title="Hapus">
+                                <i className="fas fa-trash-alt"></i>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ));
+                    })()}
                   </tbody>
                 </table>
               </div>
@@ -153,7 +283,7 @@ export default function PendataanPage() {
         {activeTab === 'tambah' && (
           <div className="tab-content active">
             <div className="card-container">
-              <h3><i className="fas fa-user-plus"></i> Registrasi Sasaran Baru</h3>
+              <h3><i className="fas fa-user-plus"></i> {editingId ? "Edit Data Sasaran" : "Registrasi Sasaran Baru"}</h3>
               <form onSubmit={handleSubmit}>
                 <div className="form-grid">
                   <div className="form-group">
@@ -227,10 +357,39 @@ export default function PendataanPage() {
                   <textarea id="inp-catatan" value={formData.catatan} onChange={handleChange}></textarea>
                 </div>
                 <div className="btn-group">
-                  <button className="btn btn-primary" type="submit"><i className="fas fa-save"></i> Simpan Data</button>
-                  <button className="btn btn-secondary" type="button" onClick={() => setActiveTab('daftar')}><i className="fas fa-times"></i> Batal</button>
+                  <button className="btn btn-primary" type="submit"><i className="fas fa-save"></i> {editingId ? "Perbarui" : "Simpan Data"}</button>
+                  <button className="btn btn-secondary" type="button" onClick={handleCancel}><i className="fas fa-times"></i> Batal</button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {deleteTarget && (
+          <div className="modal-overlay show" onClick={() => setDeleteTarget(null)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+              <div className="modal-header">
+                <h3 style={{ color: 'var(--danger)' }}><i className="fas fa-trash-alt"></i> Konfirmasi Hapus</h3>
+                <button className="modal-close" onClick={() => setDeleteTarget(null)}>
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5', margin: 0 }}>
+                  Apakah Anda yakin ingin menghapus data sasaran <strong>{deleteTarget.nama}</strong>?
+                  <br />
+                  <span style={{ color: 'var(--danger-light)', fontWeight: 600, display: 'block', marginTop: '8px' }}>Tindakan ini bersifat permanen dan akan menghapus seluruh data riwayat pemeriksaan terkait.</span>
+                </p>
+                
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                  <button className="btn btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setDeleteTarget(null)}>
+                    Batal
+                  </button>
+                  <button className="btn btn-danger" style={{ flex: 1, justifyContent: 'center' }} onClick={() => confirmDelete(deleteTarget.id)}>
+                    Ya, Hapus
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

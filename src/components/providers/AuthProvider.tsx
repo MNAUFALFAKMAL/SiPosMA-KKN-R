@@ -13,6 +13,8 @@ interface AuthContextType {
   login: (username: string, role: string, name: string) => void;
   logout: () => void;
   isLoading: boolean;
+  isSidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,11 +22,14 @@ const AuthContext = createContext<AuthContextType>({
   login: () => {},
   logout: () => {},
   isLoading: true,
+  isSidebarOpen: false,
+  setSidebarOpen: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in (using localStorage for prototype)
@@ -47,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, isLoading, isSidebarOpen, setSidebarOpen }}>
       {children}
     </AuthContext.Provider>
   );

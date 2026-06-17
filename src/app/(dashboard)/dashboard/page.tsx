@@ -29,20 +29,51 @@ export default function DashboardPage() {
     lansiaCount: 0,
     totalPemeriksaan: 0
   });
+  const [isMobile, setIsMobile] = useState(false);
+  const [showLineMenu, setShowLineMenu] = useState(false);
+
+  const fetchStats = async () => {
+    try {
+      const res = await fetch('/api/stats');
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch stats", e);
+    }
+  };
+
+  const downloadChart = (chartId: string, filename: string) => {
+    const canvas = document.getElementById(chartId) as HTMLCanvasElement;
+    if (!canvas) return;
+    const link = document.createElement("a");
+    link.download = filename;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await fetch('/api/stats');
-        if (res.ok) {
-          const data = await res.json();
-          setStats(data);
-        }
-      } catch (e) {
-        console.error("Failed to fetch stats", e);
+    fetchStats();
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.card-action')) {
+        setShowLineMenu(false);
       }
     };
-    fetchStats();
+    document.addEventListener("click", handleOutsideClick);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      document.removeEventListener("click", handleOutsideClick);
+    };
   }, []);
 
   const lineData = {
@@ -110,11 +141,11 @@ export default function DashboardPage() {
     cutout: '75%',
     plugins: {
       legend: { 
-        position: 'right' as const,
+        position: isMobile ? 'bottom' as const : 'right' as const,
         labels: {
           color: '#4a4a6a',
           font: { family: "'Bookman Old Style', serif", size: 12, weight: 600 as any },
-          padding: 20,
+          padding: isMobile ? 10 : 20,
           usePointStyle: true,
           pointStyle: 'circle'
         }
@@ -129,7 +160,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Header title="Tinjauan Dasbor" context="Analitik real-time dan metrik utama Posyandu" />
+      <Header title="Dashboard" context="Analitik real-time dan metrik utama Posyandu" />
 
       <section className="view-section active" style={{ animation: "none" }}>
         {/* Welcome Banner */}
@@ -196,12 +227,45 @@ export default function DashboardPage() {
                     <h3>Tren Kunjungan 6 Bulan Terakhir</h3>
                     <p className="card-subtitle">Peningkatan partisipasi masyarakat ke Posyandu</p>
                   </div>
-                  <div className="card-action">
-                    <button className="btn-icon-light"><i className="fas fa-ellipsis-v"></i></button>
+                  <div className="card-action" style={{ position: 'relative' }}>
+                    <button className="btn-icon-light" onClick={() => setShowLineMenu(!showLineMenu)}><i className="fas fa-ellipsis-v"></i></button>
+                    {showLineMenu && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        right: 0,
+                        backgroundColor: 'white',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: 'var(--radius-sm)',
+                        boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                        zIndex: 10,
+                        width: '180px',
+                        padding: '6px 0',
+                        marginTop: '4px',
+                        textAlign: 'left'
+                      }}>
+                        <div 
+                          onClick={() => { fetchStats(); setShowLineMenu(false); }}
+                          style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-secondary)' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(91,79,207,0.08)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <i className="fas fa-sync-alt" style={{ marginRight: '6px' }}></i> Refresh Data
+                        </div>
+                        <div 
+                          onClick={() => { downloadChart('line-chart', 'tren_kunjungan.png'); setShowLineMenu(false); }}
+                          style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-secondary)', borderTop: '1px solid rgba(0,0,0,0.05)' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(91,79,207,0.08)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <i className="fas fa-file-image" style={{ marginRight: '6px' }}></i> Unduh Grafik (PNG)
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="chart-container" style={{height: "280px", position: "relative", marginTop: '20px'}}>
-                    <Line data={lineData} options={lineOptions} />
+                    <Line id="line-chart" data={lineData} options={lineOptions} />
                 </div>
             </div>
             
@@ -212,11 +276,11 @@ export default function DashboardPage() {
                     <p className="card-subtitle">Persebaran rasio stunting dan gizi normal bulan ini</p>
                   </div>
                   <div className="card-action">
-                    <button className="btn-icon-light"><i className="fas fa-download"></i></button>
+                    <button className="btn-icon-light" onClick={() => downloadChart('doughnut-chart', 'distribusi_status_gizi.png')} title="Unduh Gambar"><i className="fas fa-download"></i></button>
                   </div>
                 </div>
                 <div className="chart-container" style={{height: "280px", position: "relative", marginTop: '20px', display: 'flex', justifyContent: 'center'}}>
-                    <Doughnut data={doughnutData} options={doughnutOptions} />
+                    <Doughnut id="doughnut-chart" data={doughnutData} options={doughnutOptions} />
                     <div className="doughnut-inner-text">
                       <span className="val">{stats.balitaCount}</span>
                       <span className="lbl">Balita</span>

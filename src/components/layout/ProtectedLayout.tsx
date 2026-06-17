@@ -22,7 +22,7 @@ const roleAccessMap: Record<string, string[]> = {
 };
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isSidebarOpen, setSidebarOpen } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -63,6 +63,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   return (
     <>
       <div className="toast-container" id="toast-container"></div>
+      <div className={`sidebar-overlay ${isSidebarOpen ? "show" : ""}`} onClick={() => setSidebarOpen(false)}></div>
       <Sidebar />
       <main className="main-content" id="main-content">
         {children}

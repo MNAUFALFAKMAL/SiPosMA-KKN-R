@@ -6,7 +6,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, isSidebarOpen, setSidebarOpen } = useAuth();
 
   const userRole = user?.username || 'admin'; // Using username as role identifier for simplicity
 
@@ -62,8 +62,12 @@ export default function Sidebar() {
     return true;
   });
 
+  const handleLinkClick = () => {
+    setSidebarOpen(false);
+  };
+
   return (
-    <nav className="sidebar" id="sidebar">
+    <nav className={`sidebar ${isSidebarOpen ? "mobile-open" : ""}`} id="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-logo">
           <div className="logo-icon" style={{ padding: 0, overflow: 'hidden' }}>
@@ -73,6 +77,9 @@ export default function Sidebar() {
             <h2>SiPosMA</h2>
             <span>Sistem Informasi Posyandu</span>
           </div>
+          <button className="btn-sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Tutup Menu">
+            <i className="fas fa-times"></i>
+          </button>
         </div>
         <div className="sidebar-alur-label">Alur Sistem Terintegrasi</div>
       </div>
@@ -95,14 +102,14 @@ export default function Sidebar() {
 
           if (item.id === "dashboard") {
             return (
-              <Link href={item.href!} key={item.id} className={`nav-dashboard-link ${isActive ? "active" : ""}`} style={{ textDecoration: 'none' }}>
+              <Link href={item.href!} key={item.id} onClick={handleLinkClick} className={`nav-dashboard-link ${isActive ? "active" : ""}`} style={{ textDecoration: 'none' }}>
                 <i className={`fas ${item.icon}`}></i> {item.title}
               </Link>
             );
           }
 
           return (
-            <Link href={item.href!} key={item.id} className={`nav-step ${isActive ? "active" : ""}`} style={{ textDecoration: 'none' }}>
+            <Link href={item.href!} key={item.id} onClick={handleLinkClick} className={`nav-step ${isActive ? "active" : ""}`} style={{ textDecoration: 'none' }}>
               <div className="step-num">{item.step}</div>
               <div>
                 {item.title}
