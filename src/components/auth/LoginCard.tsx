@@ -7,6 +7,7 @@ export default function LoginCard() {
   const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -60,12 +61,16 @@ export default function LoginCard() {
           <div className="form-group-login">
             <i className="fas fa-lock input-icon"></i>
             <input 
-              type="password" 
+              type={showPassword ? "text" : "password"} 
               placeholder="Password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required 
             />
+            <i 
+              className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'} password-toggle-icon`}
+              onClick={() => setShowPassword(!showPassword)}
+            ></i>
           </div>
 
           {error && <div className="login-error"><i className="fas fa-exclamation-circle"></i> Kredensial tidak valid. Coba lagi.</div>}

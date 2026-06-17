@@ -470,3 +470,40 @@ html.dark .premium-chart-card {
   background: rgba(30, 41, 59, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+/* Password Toggle Icon */
+.password-toggle-icon {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  z-index: 5;
+}
+
+.password-toggle-icon:hover {
+  color: var(--primary);
+}
+
+.form-group-login input {
+  padding-right: 50px !important; /* Make room for the toggle icon */
+}
+
+/* Dark Mode styles for Login Card and Inputs */
+html.dark .login-card {
+  background: rgba(31, 41, 55, 0.85);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+html.dark .form-group-login input {
+  background: rgba(55, 65, 81, 0.8);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+html.dark .form-group-login input:focus {
+  background: rgba(55, 65, 81, 1);
+  border-color: var(--primary);
+}
