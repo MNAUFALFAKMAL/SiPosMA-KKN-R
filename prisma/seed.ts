@@ -1,7 +1,10 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
+import 'dotenv/config';
 
-const adapter = new PrismaBetterSqlite3({ url: "file:./dev.db" });
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
@@ -18,6 +21,7 @@ async function main() {
     ]
   });
 
+  /*
   console.log("Memasukkan data Sasaran...");
   
   // BALITA
@@ -161,8 +165,9 @@ async function main() {
       catatan: 'Sehat'
     }
   });
+  */
 
-  console.log("Seeding selesai!");
+  console.log("Seeding (Data bersih) selesai!");
 }
 
 main()
