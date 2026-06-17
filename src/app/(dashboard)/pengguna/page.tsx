@@ -165,9 +165,22 @@ export default function PenggunaPage() {
                       <td><strong>{u.name}</strong></td>
                       <td>{u.email}</td>
                       <td>
-                        <span className={`badge ${u.role === "ADMIN" ? "badge-danger" : "badge-primary"}`} style={{ textTransform: "uppercase" }}>
-                          {u.role}
-                        </span>
+                        {(() => {
+                          const roleMap: Record<string, { label: string; color: string }> = {
+                            ADMIN:    { label: "Super Admin", color: "#5b4fcf" },
+                            ADMINPOS: { label: "Admin Posyandu", color: "#0ab5b0" },
+                            KADER:    { label: "Kader Posyandu", color: "#00a878" },
+                            BIDAN:    { label: "Bidan Desa", color: "#e8568c" },
+                            KADES:    { label: "Kepala Desa", color: "#e6a817" },
+                            ORTU:     { label: "Orang Tua", color: "#d45c35" },
+                          };
+                          const r = roleMap[u.role] || { label: u.role, color: "#8888a8" };
+                          return (
+                            <span style={{ padding: "3px 10px", borderRadius: "999px", fontSize: "0.78rem", fontWeight: 700, color: "white", background: r.color, whiteSpace: "nowrap" }}>
+                              {r.label}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td>
                         <span className="status-indicator status-normal">Aktif</span>
@@ -193,8 +206,8 @@ export default function PenggunaPage() {
 
       {/* MODAL OVERLAY */}
       {isModalOpen && (
-        <div className="modal-backdrop" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
-          <div className="modal-content" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", width: "100%", maxWidth: "450px", padding: "24px", boxShadow: "var(--glass-shadow)" }}>
+        <div className="modal-backdrop" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
+          <div className="modal-content" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", width: "calc(100% - 40px)", maxWidth: "450px", padding: "24px", boxShadow: "0 30px 60px rgba(0,0,0,0.3)", maxHeight: "90vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h4 style={{ margin: 0, fontSize: "1.2rem", display: "flex", alignItems: "center", gap: "8px" }}>
                 <i className="fas fa-user-plus" style={{ color: "var(--primary)" }}></i> Tambah Pengguna Baru
@@ -228,13 +241,13 @@ export default function PenggunaPage() {
               </div>
 
               <div style={{ marginBottom: "16px" }}>
-                <label style={{ display: "block", marginBottom: "6px", fontSize: "0.9rem", fontWeight: "bold" }}>Email / Username Login</label>
+                <label style={{ display: "block", marginBottom: "6px", fontSize: "0.9rem", fontWeight: "bold" }}>Username Login</label>
                 <input 
-                  type="email" 
+                  type="text" 
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="Contoh: rahma@siposma.com"
+                  placeholder="Contoh: kader01 atau rahma@siposma.com"
                   style={{ width: "100%", padding: "10px 14px", border: "1px solid var(--border-color)", borderRadius: "var(--radius-sm)", background: "var(--bg-input)", color: "var(--text-primary)" }}
                   required
                 />
@@ -261,8 +274,12 @@ export default function PenggunaPage() {
                   onChange={handleChange}
                   style={{ width: "100%", padding: "10px 14px", border: "1px solid var(--border-color)", borderRadius: "var(--radius-sm)", background: "var(--bg-input)", color: "var(--text-primary)", cursor: "pointer" }}
                 >
+                  <option value="ADMIN">Super Admin (Akses Penuh)</option>
+                  <option value="ADMINPOS">Administrator Posyandu</option>
                   <option value="KADER">Kader Posyandu</option>
-                  <option value="ADMIN">Super Admin / Administrator</option>
+                  <option value="BIDAN">Bidan Desa</option>
+                  <option value="KADES">Kepala Desa</option>
+                  <option value="ORTU">Orang Tua / Masyarakat</option>
                 </select>
               </div>
 
