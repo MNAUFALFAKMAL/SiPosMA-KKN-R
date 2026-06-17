@@ -21,7 +21,6 @@ async function main() {
     ]
   });
 
-  /*
   console.log("Memasukkan data Sasaran...");
   
   // BALITA
@@ -165,9 +164,8 @@ async function main() {
       catatan: 'Sehat'
     }
   });
-  */
 
-  console.log("Seeding (Data bersih) selesai!");
+  console.log("Seeding selesai!");
 }
 
 main()
