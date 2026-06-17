@@ -507,3 +507,15 @@ html.dark .form-group-login input:focus {
   background: rgba(55, 65, 81, 1);
   border-color: var(--primary);
 }
+
+/* Modal Backdrop positioning adjustments for Sidebar */
+.modal-backdrop {
+  left: 290px !important;
+}
+
+@media (max-width: 992px) {
+  .modal-backdrop {
+    left: 0 !important;
+  }
+}
+

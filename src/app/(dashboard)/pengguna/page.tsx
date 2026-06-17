@@ -167,12 +167,13 @@ export default function PenggunaPage() {
                       <td>
                         {(() => {
                           const roleMap: Record<string, { label: string; color: string }> = {
-                            ADMIN:    { label: "Super Admin", color: "#5b4fcf" },
-                            ADMINPOS: { label: "Admin Posyandu", color: "#0ab5b0" },
-                            KADER:    { label: "Kader Posyandu", color: "#00a878" },
-                            BIDAN:    { label: "Bidan Desa", color: "#e8568c" },
-                            KADES:    { label: "Kepala Desa", color: "#e6a817" },
-                            ORTU:     { label: "Orang Tua", color: "#d45c35" },
+                            SUPER_ADMIN: { label: "Super Admin", color: "#6c5ce7" },
+                            ADMIN:       { label: "Admin", color: "#00cec9" },
+                            ADMINPOS:    { label: "Admin Posyandu", color: "#0ab5b0" },
+                            KADER:       { label: "Kader Posyandu", color: "#00a878" },
+                            BIDAN:       { label: "Bidan Desa", color: "#e8568c" },
+                            KADES:       { label: "Kepala Desa", color: "#e6a817" },
+                            ORTU:        { label: "Orang Tua", color: "#d45c35" },
                           };
                           const r = roleMap[u.role] || { label: u.role, color: "#8888a8" };
                           return (
@@ -274,8 +275,9 @@ export default function PenggunaPage() {
                   onChange={handleChange}
                   style={{ width: "100%", padding: "10px 14px", border: "1px solid var(--border-color)", borderRadius: "var(--radius-sm)", background: "var(--bg-input)", color: "var(--text-primary)", cursor: "pointer" }}
                 >
-                  <option value="ADMIN">Super Admin (Akses Penuh)</option>
-                  <option value="ADMINPOS">Administrator Posyandu</option>
+                  <option value="SUPER_ADMIN">Super Admin (Akses Penuh)</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="ADMINPOS">Admin Posyandu</option>
                   <option value="KADER">Kader Posyandu</option>
                   <option value="BIDAN">Bidan Desa</option>
                   <option value="KADES">Kepala Desa</option>
