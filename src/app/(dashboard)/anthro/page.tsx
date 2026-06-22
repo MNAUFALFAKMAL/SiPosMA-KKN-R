@@ -6,12 +6,12 @@ import { getTBUStatus, getBBUStatus, Gender } from "@/lib/whoAnthro";
 
 export default function AnthroPage() {
   const [gender, setGender] = useState<Gender>('L');
-  const [age, setAge] = useState<number>(24);
-  const [weight, setWeight] = useState<number>(12);
-  const [height, setHeight] = useState<number>(87);
+  const [age, setAge] = useState<number | "">(24);
+  const [weight, setWeight] = useState<number | "">(12);
+  const [height, setHeight] = useState<number | "">(87);
 
-  const tbStatus = useMemo(() => getTBUStatus(height, gender, age), [height, gender, age]);
-  const bbStatus = useMemo(() => getBBUStatus(weight, gender, age), [weight, gender, age]);
+  const tbStatus = useMemo(() => getTBUStatus(height === "" ? 0 : height, gender, age === "" ? 0 : age), [height, gender, age]);
+  const bbStatus = useMemo(() => getBBUStatus(weight === "" ? 0 : weight, gender, age === "" ? 0 : age), [weight, gender, age]);
 
   const getStatusColor = (code: string) => {
     switch (code) {
@@ -72,7 +72,7 @@ export default function AnthroPage() {
                   <input 
                     type="number" min="0" max="60"
                     value={age} 
-                    onChange={e => setAge(Number(e.target.value))}
+                    onChange={e => setAge(e.target.value === "" ? "" : Number(e.target.value))}
                     style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-light)', color: 'var(--text-primary)', outline: 'none' }}
                   />
                 </div>
@@ -84,7 +84,7 @@ export default function AnthroPage() {
                   <input 
                     type="number" step="0.1" min="1"
                     value={weight} 
-                    onChange={e => setWeight(Number(e.target.value))}
+                    onChange={e => setWeight(e.target.value === "" ? "" : Number(e.target.value))}
                     style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-light)', color: 'var(--text-primary)', outline: 'none' }}
                   />
                 </div>
@@ -93,7 +93,7 @@ export default function AnthroPage() {
                   <input 
                     type="number" step="0.1" min="30"
                     value={height} 
-                    onChange={e => setHeight(Number(e.target.value))}
+                    onChange={e => setHeight(e.target.value === "" ? "" : Number(e.target.value))}
                     style={{ width: '100%', padding: '12px 15px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-light)', color: 'var(--text-primary)', outline: 'none' }}
                   />
                 </div>
