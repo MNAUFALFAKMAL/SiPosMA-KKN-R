@@ -18,6 +18,7 @@ export default function PenggunaPage() {
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -55,26 +56,44 @@ export default function PenggunaPage() {
     });
   };
 
-  // Handle Submit (Create User)
+  // Handle Edit Click
+  const handleEditClick = (u: User) => {
+    setEditingId(u.id);
+    setFormData({
+      name: u.name,
+      email: u.email,
+      password: "",
+      role: u.role,
+    });
+    setFormError("");
+    setIsModalOpen(true);
+  };
+
+  // Handle Submit (Create or Update User)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitLoading(true);
     setFormError("");
 
     try {
-      const res = await fetch("/api/pengguna", {
-        method: "POST",
+      const url = "/api/pengguna";
+      const method = editingId ? "PUT" : "POST";
+      const payload = editingId ? { id: editingId, ...formData } : formData;
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const result = await res.json();
       if (!res.ok) {
-        throw new Error(result.error || "Gagal menambahkan pengguna");
+        throw new Error(result.error || `Gagal ${editingId ? "mengubah" : "menambahkan"} pengguna`);
       }
 
       // Success
       setIsModalOpen(false);
+      setEditingId(null);
       setFormData({ name: "", email: "", password: "", role: "SUPER_ADMIN" });
       fetchUsers(); // Refresh list
     } catch (err: any) {
@@ -119,6 +138,8 @@ export default function PenggunaPage() {
             <button 
               className="btn btn-primary"
               onClick={() => {
+                setEditingId(null);
+                setFormData({ name: "", email: "", password: "", role: "SUPER_ADMIN" });
                 setFormError("");
                 setIsModalOpen(true);
               }}
@@ -185,14 +206,24 @@ export default function PenggunaPage() {
                         <span className="status-indicator status-normal">Aktif</span>
                       </td>
                       <td style={{ textAlign: "center" }}>
-                        <button 
-                          onClick={() => handleDelete(u.id, u.name)}
-                          className="btn btn-danger btn-sm"
-                          title="Hapus Pengguna"
-                          style={{ padding: "6px 10px", fontSize: "0.85rem" }}
-                        >
-                          <i className="fas fa-trash-alt"></i> Hapus
-                        </button>
+                        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                          <button 
+                            onClick={() => handleEditClick(u)}
+                            className="btn btn-secondary btn-sm"
+                            title="Edit Pengguna"
+                            style={{ padding: "6px 10px", fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                          >
+                            <i className="fas fa-edit"></i> Edit
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(u.id, u.name)}
+                            className="btn btn-danger btn-sm"
+                            title="Hapus Pengguna"
+                            style={{ padding: "6px 10px", fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                          >
+                            <i className="fas fa-trash-alt"></i> Hapus
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -209,10 +240,14 @@ export default function PenggunaPage() {
           <div className="modal-content" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", width: "calc(100% - 40px)", maxWidth: "450px", padding: "24px", boxShadow: "0 30px 60px rgba(0,0,0,0.3)", maxHeight: "90vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h4 style={{ margin: 0, fontSize: "1.2rem", display: "flex", alignItems: "center", gap: "8px" }}>
-                <i className="fas fa-user-plus" style={{ color: "var(--primary)" }}></i> Tambah Pengguna Baru
+                <i className={editingId ? "fas fa-user-edit" : "fas fa-user-plus"} style={{ color: "var(--primary)" }}></i> {editingId ? "Edit Pengguna" : "Tambah Pengguna Baru"}
               </h4>
               <button 
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setEditingId(null);
+                  setFormData({ name: "", email: "", password: "", role: "SUPER_ADMIN" });
+                }}
                 style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "1.2rem" }}
               >
                 <i className="fas fa-times"></i>
@@ -253,15 +288,17 @@ export default function PenggunaPage() {
               </div>
 
               <div style={{ marginBottom: "16px" }}>
-                <label style={{ display: "block", marginBottom: "6px", fontSize: "0.9rem", fontWeight: "bold" }}>Password</label>
+                <label style={{ display: "block", marginBottom: "6px", fontSize: "0.9rem", fontWeight: "bold" }}>
+                  Password {editingId && <span style={{ fontWeight: "normal", color: "var(--text-muted)", fontSize: "0.8rem" }}>(Kosongkan jika tidak diubah)</span>}
+                </label>
                 <input 
                   type="password" 
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Masukkan password login"
+                  placeholder={editingId ? "Kosongkan jika tidak ingin mengubah password" : "Masukkan password login"}
                   style={{ width: "100%", padding: "10px 14px", border: "1px solid var(--border-color)", borderRadius: "var(--radius-sm)", background: "var(--bg-input)", color: "var(--text-primary)" }}
-                  required
+                  required={!editingId}
                 />
               </div>
 
@@ -285,7 +322,11 @@ export default function PenggunaPage() {
                 <button 
                   type="button" 
                   className="btn btn-secondary"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setEditingId(null);
+                    setFormData({ name: "", email: "", password: "", role: "SUPER_ADMIN" });
+                  }}
                   style={{ padding: "10px 16px" }}
                 >
                   Batal

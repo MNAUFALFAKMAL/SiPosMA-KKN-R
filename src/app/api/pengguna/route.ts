@@ -59,14 +59,19 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Missing user ID" }, { status: 400 });
     }
 
+    const updateData: any = {
+      name,
+      email,
+      role,
+    };
+
+    if (password && password.trim() !== "") {
+      updateData.password = password;
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: {
-        name,
-        email,
-        password,
-        role,
-      },
+      data: updateData,
     });
 
     return NextResponse.json(updatedUser);
