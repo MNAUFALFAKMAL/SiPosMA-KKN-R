@@ -7,6 +7,7 @@ export default function PemantauanPage() {
   const [pemeriksaanList, setPemeriksaanList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("semua");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchPemeriksaan = async () => {
     try {
@@ -68,7 +69,10 @@ export default function PemantauanPage() {
     }
   };
 
-  const filteredItems = getFilteredList();
+  const filteredItems = getFilteredList().filter(p =>
+    !searchTerm || (p.sasaran?.nama || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.sasaran?.nik || '').includes(searchTerm)
+  );
 
   return (
     <>
@@ -120,14 +124,27 @@ export default function PemantauanPage() {
 
         {/* List Card */}
         <div className="card-container">
-          <div className="card-header-actions">
-            <h3>
+          <div className="card-header-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <h3 style={{ margin: 0 }}>
               <i className="fas fa-exclamation-triangle" style={{ color: 'var(--warning)' }}></i> 
               Daftar Pemantauan: {activeTab === 'stunting' ? 'Balita Stunting/Gizi Kurang' : activeTab === 'kek' ? 'Ibu Hamil KEK' : activeTab === 'lansia' ? 'Lansia Risti' : 'Semua Sasaran Berisiko'}
             </h3>
-            {activeTab !== 'semua' && (
-              <button className="btn btn-sm btn-outline" onClick={() => setActiveTab('semua')}>Tampilkan Semua</button>
-            )}
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              {/* Search */}
+              <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px 12px', gap: '8px' }}>
+                <i className="fas fa-search" style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}></i>
+                <input
+                  type="text"
+                  placeholder="Cari nama / NIK..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  style={{ border: 'none', background: 'transparent', outline: 'none', color: 'var(--text-primary)', fontSize: '0.85rem', width: '160px' }}
+                />
+              </div>
+              {activeTab !== 'semua' && (
+                <button className="btn btn-sm btn-outline" onClick={() => setActiveTab('semua')}>Tampilkan Semua</button>
+              )}
+            </div>
           </div>
 
           {loading ? (
