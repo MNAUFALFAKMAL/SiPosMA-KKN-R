@@ -21,6 +21,8 @@ ChartJS.register(
 export default function RiwayatPage() {
   const [activeTab, setActiveTab] = useState("pemeriksaan");
   const [pemeriksaanList, setPemeriksaanList] = useState<any[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState("semua");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchRiwayat = async () => {
     try {
@@ -61,30 +63,92 @@ export default function RiwayatPage() {
 
         {activeTab === 'pemeriksaan' && (
           <div className="tab-content active">
-            <div className="card-container">
-              <h3><i className="fas fa-history"></i> Semua Rekam Pemeriksaan</h3>
-              {pemeriksaanList.length === 0 ? (
-                <div className="empty-state">
-                  <i className="fas fa-clipboard"></i><p>Belum ada data pemeriksaan.</p>
-                </div>
-              ) : (
+             <div className="card-container">
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '15px' }}>
+                 <h3 style={{ margin: 0 }}><i className="fas fa-history"></i> Semua Rekam Pemeriksaan</h3>
+                 
+                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                   {/* Category Filter Buttons */}
+                   <div style={{ display: 'flex', background: 'var(--bg-input)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                     {['semua', 'balita', 'ibu_hamil', 'lansia'].map((cat) => (
+                       <button
+                         key={cat}
+                         type="button"
+                         onClick={() => setCategoryFilter(cat)}
+                         style={{
+                           padding: '6px 12px',
+                           border: 'none',
+                           borderRadius: '6px',
+                           fontSize: '0.8rem',
+                           fontWeight: 'bold',
+                           cursor: 'pointer',
+                           background: categoryFilter === cat ? 'var(--primary)' : 'transparent',
+                           color: categoryFilter === cat ? 'white' : 'var(--text-secondary)',
+                           transition: 'all 0.2s ease'
+                         }}
+                       >
+                         {cat === 'semua' ? 'Semua' : cat === 'balita' ? 'Balita' : cat === 'ibu_hamil' ? 'Ibu Hamil' : 'Lansia'}
+                       </button>
+                     ))}
+                   </div>
+
+                   <div className="search-bar">
+                     <div className="search-input-wrapper" style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px 12px' }}>
+                       <i className="fas fa-search" style={{ color: 'var(--text-muted)', marginRight: '8px' }}></i>
+                       <input 
+                         type="text" 
+                         placeholder="Cari nama sasaran..." 
+                         value={searchTerm}
+                         onChange={(e) => setSearchTerm(e.target.value)}
+                         style={{ border: 'none', background: 'transparent', outline: 'none', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                       />
+                     </div>
+                   </div>
+                 </div>
+               </div>
+               {pemeriksaanList.length === 0 ? (
+                 <div className="empty-state">
+                   <i className="fas fa-clipboard"></i><p>Belum ada data pemeriksaan.</p>
+                 </div>
+               ) : (
                 <div className="table-wrapper">
                   <table>
                     <thead>
                       <tr><th>Tanggal</th><th>Nama Sasaran</th><th>Kategori</th><th>BB</th><th>TB / LILA</th><th>Status Gizi</th><th>Catatan</th></tr>
                     </thead>
                     <tbody>
-                      {pemeriksaanList.map(p => (
-                        <tr key={p.id}>
-                          <td data-label="Tanggal">{new Date(p.tanggal).toLocaleDateString('id-ID')}</td>
-                          <td data-label="Nama Sasaran">{p.sasaran?.nama}</td>
-                          <td data-label="Kategori">{p.sasaran?.kategori}</td>
-                          <td data-label="BB">{p.bb || p.bbLansia || p.bbBumil || '-'} Kg</td>
-                          <td data-label="TB / LILA">{p.tb || p.lilaBumil || '-'}</td>
-                          <td data-label="Status Gizi">{p.statusGizi || '-'}</td>
-                          <td data-label="Catatan">{p.catatan || '-'}</td>
-                        </tr>
-                      ))}
+                      {(() => {
+                        const filtered = pemeriksaanList.filter(p => {
+                          const matchesSearch = p.sasaran?.nama.toLowerCase().includes(searchTerm.toLowerCase());
+                          const matchesCategory = categoryFilter === 'semua' || p.sasaran?.kategori === categoryFilter;
+                          return matchesSearch && matchesCategory;
+                        });
+                        if (filtered.length === 0) {
+                          return <tr><td colSpan={7} style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>Tidak menemukan rekam pemeriksaan yang cocok.</td></tr>;
+                        }
+                        return filtered.map(p => (
+                          <tr key={p.id}>
+                            <td data-label="Tanggal">{new Date(p.tanggal).toLocaleDateString('id-ID')}</td>
+                            <td data-label="Nama Sasaran">{p.sasaran?.nama}</td>
+                            <td data-label="Kategori" style={{ textTransform: 'capitalize' }}>
+                              <span style={{
+                                padding: '3px 8px',
+                                borderRadius: '4px',
+                                fontSize: '0.75rem',
+                                fontWeight: 'bold',
+                                color: 'white',
+                                background: p.sasaran?.kategori === 'balita' ? '#00a878' : p.sasaran?.kategori === 'ibu_hamil' ? '#e8568c' : '#e6a817'
+                              }}>
+                                {p.sasaran?.kategori === 'ibu_hamil' ? 'Ibu Hamil' : p.sasaran?.kategori}
+                              </span>
+                            </td>
+                            <td data-label="BB">{p.bb || p.bbLansia || p.bbBumil || '-'} Kg</td>
+                            <td data-label="TB / LILA">{p.tb || p.lilaBumil || '-'}</td>
+                            <td data-label="Status Gizi">{p.statusGizi || '-'}</td>
+                            <td data-label="Catatan">{p.catatan || '-'}</td>
+                          </tr>
+                        ));
+                      })()}
                     </tbody>
                   </table>
                 </div>

@@ -10,6 +10,7 @@ export default function PendataanPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState("semua");
 
   const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') => {
     const container = document.getElementById('toast-container');
@@ -205,17 +206,44 @@ export default function PendataanPage() {
         {activeTab === 'daftar' && (
           <div className="tab-content active">
             <div className="card-container">
-              <div className="card-header-actions">
-                <h3><i className="fas fa-users"></i> Data Seluruh Sasaran</h3>
-                <div className="search-bar">
-                  <div className="search-input-wrapper">
-                    <i className="fas fa-search"></i>
-                    <input 
-                      type="text" 
-                      placeholder="Cari nama / NIK..." 
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+              <div className="card-header-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                <h3 style={{ margin: 0 }}><i className="fas fa-users"></i> Data Seluruh Sasaran</h3>
+                
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {/* Category Filter Buttons */}
+                  <div style={{ display: 'flex', background: 'var(--bg-input)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    {['semua', 'balita', 'ibu_hamil', 'lansia'].map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setCategoryFilter(cat)}
+                        style={{
+                          padding: '6px 12px',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '0.8rem',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          background: categoryFilter === cat ? 'var(--primary)' : 'transparent',
+                          color: categoryFilter === cat ? 'white' : 'var(--text-secondary)',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        {cat === 'semua' ? 'Semua' : cat === 'balita' ? 'Balita' : cat === 'ibu_hamil' ? 'Ibu Hamil' : 'Lansia'}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="search-bar">
+                    <div className="search-input-wrapper">
+                      <i className="fas fa-search"></i>
+                      <input 
+                        type="text" 
+                        placeholder="Cari nama / NIK..." 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -233,10 +261,12 @@ export default function PendataanPage() {
                   </thead>
                   <tbody>
                     {(() => {
-                      const filtered = sasaranList.filter(s => 
-                        s.nama.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                        (s.nik && s.nik.includes(searchTerm))
-                      );
+                      const filtered = sasaranList.filter(s => {
+                        const matchesSearch = s.nama.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          (s.nik && s.nik.includes(searchTerm));
+                        const matchesCategory = categoryFilter === 'semua' || s.kategori === categoryFilter;
+                        return matchesSearch && matchesCategory;
+                      });
                       if (filtered.length === 0 && !loading) {
                         return <tr><td colSpan={6} style={{textAlign: 'center'}}>Tidak menemukan data sasaran.</td></tr>;
                       }
