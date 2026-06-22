@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Header from "@/components/layout/Header";
-import { getTBUStatus, getBBUStatus, Gender } from "@/lib/whoAnthro";
+import { getTBUStatus, getBBUStatus, getBBTBStatus, getAgeCategory, Gender } from "@/lib/whoAnthro";
 
 export default function AnthroPage() {
   const [gender, setGender] = useState<Gender>('L');
@@ -12,6 +12,8 @@ export default function AnthroPage() {
 
   const tbStatus = useMemo(() => getTBUStatus(height === "" ? 0 : height, gender, age === "" ? 0 : age), [height, gender, age]);
   const bbStatus = useMemo(() => getBBUStatus(weight === "" ? 0 : weight, gender, age === "" ? 0 : age), [weight, gender, age]);
+  const bbtbStatus = useMemo(() => getBBTBStatus(weight === "" ? 0 : weight, height === "" ? 0 : height, gender), [weight, height, gender]);
+  const ageCategory = useMemo(() => getAgeCategory(age === "" ? 0 : age), [age]);
 
   const getStatusColor = (code: string) => {
     switch (code) {
@@ -104,8 +106,11 @@ export default function AnthroPage() {
 
           {/* RESULT PANEL */}
           <div className="card-container premium-chart-card">
-            <div className="card-header" style={{ marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '15px' }}>
-              <h3>Hasil Analisis Otomatis</h3>
+            <div className="card-header" style={{ marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+              <h3 style={{ margin: 0 }}>Hasil Analisis Otomatis</h3>
+              <span style={{ background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 'bold' }}>
+                {ageCategory}
+              </span>
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -128,13 +133,27 @@ export default function AnthroPage() {
               <div style={{ padding: '20px', borderRadius: '12px', background: getStatusBg(bbStatus.categoryCode), border: `1px solid ${getStatusColor(bbStatus.categoryCode)}40`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h4 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.1rem' }}>Berat Badan menurut Umur (BB/U)</h4>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '5px' }}>Indikator status gizi</p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '5px' }}>Indikator status gizi (berat badan)</p>
                   <div style={{ marginTop: '10px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                     Nilai Z-Score: <strong style={{ color: 'var(--text-primary)' }}>{bbStatus.zScore > 0 ? `+${bbStatus.zScore}` : bbStatus.zScore} SD</strong>
                   </div>
                 </div>
                 <div style={{ padding: '10px 20px', borderRadius: '8px', background: getStatusColor(bbStatus.categoryCode), color: 'white', fontWeight: 'bold', fontSize: '1rem', boxShadow: `0 4px 15px ${getStatusColor(bbStatus.categoryCode)}60` }}>
                   {bbStatus.status}
+                </div>
+              </div>
+
+              {/* BB/TB RESULT */}
+              <div style={{ padding: '20px', borderRadius: '12px', background: getStatusBg(bbtbStatus.categoryCode), border: `1px solid ${getStatusColor(bbtbStatus.categoryCode)}40`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h4 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.1rem' }}>Berat Badan menurut Tinggi Badan (BB/TB)</h4>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '5px' }}>Indikator keidealan tubuh (wasting/obesitas)</p>
+                  <div style={{ marginTop: '10px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                    Nilai Z-Score: <strong style={{ color: 'var(--text-primary)' }}>{bbtbStatus.zScore > 0 ? `+${bbtbStatus.zScore}` : bbtbStatus.zScore} SD</strong>
+                  </div>
+                </div>
+                <div style={{ padding: '10px 20px', borderRadius: '8px', background: getStatusColor(bbtbStatus.categoryCode), color: 'white', fontWeight: 'bold', fontSize: '1rem', boxShadow: `0 4px 15px ${getStatusColor(bbtbStatus.categoryCode)}60` }}>
+                  {bbtbStatus.status}
                 </div>
               </div>
 
