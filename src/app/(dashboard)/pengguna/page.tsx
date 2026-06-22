@@ -22,7 +22,7 @@ export default function PenggunaPage() {
     name: "",
     email: "",
     password: "",
-    role: "KADER",
+    role: "SUPER_ADMIN",
   });
   const [submitLoading, setSubmitLoading] = useState(false);
   const [formError, setFormError] = useState("");
@@ -75,7 +75,7 @@ export default function PenggunaPage() {
 
       // Success
       setIsModalOpen(false);
-      setFormData({ name: "", email: "", password: "", role: "KADER" });
+      setFormData({ name: "", email: "", password: "", role: "SUPER_ADMIN" });
       fetchUsers(); // Refresh list
     } catch (err: any) {
       setFormError(err.message);
@@ -168,12 +168,10 @@ export default function PenggunaPage() {
                         {(() => {
                           const roleMap: Record<string, { label: string; color: string }> = {
                             SUPER_ADMIN: { label: "Super Admin", color: "#6c5ce7" },
-                            ADMIN:       { label: "Admin", color: "#00cec9" },
                             ADMINPOS:    { label: "Admin Posyandu", color: "#0ab5b0" },
-                            KADER:       { label: "Kader Posyandu", color: "#00a878" },
                             BIDAN:       { label: "Bidan Desa", color: "#e8568c" },
                             KADES:       { label: "Kepala Desa", color: "#e6a817" },
-                            ORTU:        { label: "Orang Tua", color: "#d45c35" },
+                            ORTU:        { label: "Orang Tua / Masyarakat", color: "#d45c35" },
                           };
                           const r = roleMap[u.role] || { label: u.role, color: "#8888a8" };
                           return (
@@ -275,10 +273,8 @@ export default function PenggunaPage() {
                   onChange={handleChange}
                   style={{ width: "100%", padding: "10px 14px", border: "1px solid var(--border-color)", borderRadius: "var(--radius-sm)", background: "var(--bg-input)", color: "var(--text-primary)", cursor: "pointer" }}
                 >
-                  <option value="SUPER_ADMIN">Super Admin (Akses Penuh)</option>
-                  <option value="ADMIN">Admin</option>
+                  <option value="SUPER_ADMIN">Super Admin</option>
                   <option value="ADMINPOS">Admin Posyandu</option>
-                  <option value="KADER">Kader Posyandu</option>
                   <option value="BIDAN">Bidan Desa</option>
                   <option value="KADES">Kepala Desa</option>
                   <option value="ORTU">Orang Tua / Masyarakat</option>
